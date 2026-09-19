@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Laboratório local de análise espectral e resíntese aditiva com MIDI.">
+  <title>Spectral Resynth — laboratório de som</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d151b'/%3E%3Cpath d='M5 16h4l3-9 5 18 4-13 2 4h4' fill='none' stroke='%237ae6c1' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <header><div class="brand"><span class="mark" aria-hidden="true">∿</span><div><h1>Spectral Resynth</h1><p>Laboratório de resíntese aditiva</p></div></div><span class="badge">PROTÓTIPO 01 · LOCAL</span></header>
+  <section class="setup" aria-label="Configurar amostra">
+    <div class="upload"><span class="eyebrow">01 / FONTE</span><h2>Comece com uma nota.</h2><p>Importe uma amostra isolada e indique a nota original.</p><div class="row"><label class="button primary" for="file">Importar áudio<input id="file" type="file" accept="audio/*"></label><button id="demo">Usar demonstração</button></div><p class="small" id="fileName">WAV, MP3 ou outro formato aceito pelo navegador. Até 15 s; arquivos até 100 MB.</p></div>
+    <div class="root"><label class="eyebrow" for="root">02 / FUNDAMENTAL</label><select id="root" aria-describedby="rootHelp"></select><p id="rootHelp" class="small">C4 = dó central (MIDI 60). A nota orienta a seleção dos parciais e a transposição.</p><button id="analyze" disabled>Analisar amostra</button></div>
+  </section>
+  <section class="workspace" aria-label="Análise espectral">
+    <div class="section-head"><div><span class="eyebrow">03 / ESPECTRO</span><h2>O som, por dentro.</h2></div><span id="sampleMeta" class="small">48 kHz · FFT 4096 · hop 256</span></div>
+    <div class="plot"><canvas id="spectrum" width="1200" height="340" aria-label="Espectrograma da amostra, com frequência no eixo vertical e tempo no horizontal" role="img"></canvas><div id="empty">Importe um áudio ou use a demonstração<br><span>para revelar seus componentes.</span></div></div>
+    <div class="legend"><span><i></i> Intensidade espectral</span><span><i class="line"></i> Até 80 parciais selecionados</span><span id="duration">Tempo →</span></div>
+    <div class="status"><span id="status" role="status" aria-live="polite">Pronto para começar.</span><progress id="progress" max="100" value="0" aria-label="Progresso"></progress></div>
+  </section>
+  <section class="controls" aria-label="Reconstrução e reprodução">
+    <div class="complexity"><div class="section-head"><label class="eyebrow" for="amount">04 / PARCIAIS NA RECONSTRUÇÃO</label><output id="percent" for="amount">100%</output></div><input id="amount" type="range" min="25" max="100" value="100" step="1" disabled><div class="range-labels"><span>25% · menos componentes</span><span>100% · todos os válidos</span></div><div class="stats"><strong id="selected">—</strong><span>de <b id="total">—</b> parciais rastreados</span></div><p class="small">Ordenados por energia, com leve preferência pelos harmônicos da fundamental. Não são osciladores físicos identificados no instrumento.</p></div>
+    <div class="listen"><span class="eyebrow">05 / OUVIR E COMPARAR</span><div class="row"><button id="original" disabled>▶ Original</button><button id="resynth" class="primary" disabled>▶ Resíntese</button><button id="stop" aria-label="Parar reprodução">■ Parar</button></div><label class="volume" for="volume">Volume<input id="volume" type="range" min="0" max="100" value="65"></label><button id="download" disabled>Baixar resíntese WAV</button><p class="small">A reconstrução usa senoides. Ruído, ataques e reverberação podem perder fidelidade.</p></div>
+  </section>
+  <section class="instrument" aria-label="Teclado e MIDI"><div class="section-head"><div><span class="eyebrow">06 / TOCAR</span><h2>Transforme em instrumento.</h2></div><button id="midi">Conectar MIDI</button></div><div id="keys" class="keys" aria-label="Teclado virtual"></div><p id="midiStatus" class="small">Toque nas teclas após a reconstrução. MIDI disponível em navegadores compatíveis, via localhost ou HTTPS.</p><p class="small">O teclado transpõe o áudio reconstruído: altura e duração variam juntas. Até 8 vozes simultâneas.</p></section>
+  <footer><span>Seu áudio é processado neste navegador. Nenhum upload.</span><span>STFT → picos → rastreamento → senoides</span></footer>
+</main>
+</body>
+</html>
