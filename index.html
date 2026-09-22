@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Laboratório local de análise espectral e resíntese aditiva com MIDI.">
   <title>Spectral Resynth — laboratório de som</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d151b'/%3E%3Cpath d='M5 16h4l3-9 5 18 4-13 2 4h4' fill='none' stroke='%237ae6c1' stroke-width='2'/%3E%3C/svg%3E">
@@ -10,24 +10,48 @@
   <script src="app.js" defer></script>
 </head>
 <body>
-<main>
-  <header><div class="brand"><span class="mark" aria-hidden="true">∿</span><div><h1>Spectral Resynth</h1><p>Laboratório de resíntese aditiva</p></div></div><span class="badge">PROTÓTIPO 01 · LOCAL</span></header>
-  <section class="setup" aria-label="Configurar amostra">
-    <div class="upload"><span class="eyebrow">01 / FONTE</span><h2>Comece com uma nota.</h2><p>Importe uma amostra isolada e indique a nota original.</p><div class="row"><label class="button primary" for="file">Importar áudio<input id="file" type="file" accept="audio/*"></label><button id="demo">Usar demonstração</button></div><p class="small" id="fileName">WAV, MP3 ou outro formato aceito pelo navegador. Até 15 s; arquivos até 100 MB.</p></div>
+  <header class="app-header"><div class="brand"><span class="mark" aria-hidden="true">∿</span><div><h1>Spectral Resynth</h1><p>Laboratório de resíntese aditiva</p></div></div><div class="header-audio" title="Pico de saída após o volume e o compressor. Escala digital de −60 a 0 dBFS; não mede volume acústico nem true peak."><div class="meter-heading"><span>SAÍDA <span class="meter-unit">dBFS</span></span><output id="audioDb">−∞</output><span class="clip-label">CLIP</span></div><div id="audioMeter" class="audio-meter" role="meter" aria-label="Pico de saída de áudio" aria-valuemin="-60" aria-valuemax="0" aria-valuenow="-60" aria-valuetext="Silêncio"><div class="meter-track"><div id="audioMeterFill"></div><i id="audioMeterPeak"></i></div></div><div class="meter-scale" aria-hidden="true"><span style="left:0%">−60</span><span style="left:20%">−48</span><span style="left:40%">−36</span><span style="left:60%">−24</span><span style="left:80%">−12</span><span style="left:90%">−6</span><span style="left:100%">0</span></div></div><div id="memoryMeter" class="memory-meter"><span id="memoryLabel">MEMÓRIA</span><output id="memoryValue">N/D</output></div></header>
+<main class="app-shell">
+  <aside class="sidebar" aria-label="Biblioteca de samples">
+    <div class="sidebar-action"><button id="newSample" class="primary"><span aria-hidden="true">＋</span> Novo sample</button></div>
+    <div class="library-heading"><span class="eyebrow">SEUS SAMPLES</span><span id="sampleCount">0</span></div>
+    <nav id="sampleList" class="sample-list" aria-label="Samples salvos"></nav>
+    <p id="libraryEmpty" class="library-empty">Sua coleção começa aqui.<br>Adicione seu primeiro sample.</p>
+    <p id="storageStatus" class="storage-status" role="status">Salvos neste navegador</p>
+  </aside>
+  <div class="editor">
+  <div class="editor-heading"><div><span class="eyebrow">ÁREA DE TRABALHO</span><h2 id="sampleTitle">Novo sample</h2></div><button id="reimport" hidden>↥ Reimportar sample</button></div>
+  <div class="editor-content">
+  <section id="setup" class="setup" aria-label="Configurar amostra">
+    <div class="upload"><span class="eyebrow">01 / FONTE</span><h2>Escolha seu timbre.</h2><p>Importe o áudio e selecione um trecho de até 10 segundos.</p><div class="row"><label class="button primary" for="file">Importar áudio<input id="file" type="file" accept="audio/*"></label></div><p class="small" id="fileName">WAV, MP3 ou outro formato aceito pelo navegador. Arquivos até 512 MB.</p></div>
     <div class="root"><label class="eyebrow" for="root">02 / FUNDAMENTAL</label><select id="root" aria-describedby="rootHelp"></select><p id="rootHelp" class="small">C4 = dó central (MIDI 60). A nota orienta a seleção dos parciais e a transposição.</p><button id="analyze" disabled>Analisar amostra</button></div>
+    <div id="trimPanel" class="trim-panel" hidden>
+      <div class="row trim-toolbar"><strong>Selecione até 10 s</strong><button id="previewTrim" class="primary">▶ Ouvir trecho</button><button id="zoomOut" aria-label="Diminuir zoom">−</button><button id="zoomIn" aria-label="Aumentar zoom">+</button><button id="zoomFit">Ver tudo</button></div>
+      <div class="timeline-view"><canvas id="timeline" aria-label="Forma de onda do arquivo. Arraste para selecionar; use os campos de início e fim para ajuste preciso." role="img"></canvas><span id="trimPlayhead" class="trim-playhead" aria-hidden="true" hidden></span></div>
+      <label class="trim-pan">Navegar no áudio<input id="timelinePan" type="range" min="0" max="0" step="0.001" value="0"></label>
+      <div class="trim-fields"><label>Início (s)<input id="trimStart" type="number" min="0" step="0.001" value="0"></label><label>Fim (s)<input id="trimEnd" type="number" min="0" step="0.001" value="10"></label><output id="trimDuration" aria-live="polite"></output></div>
+      <p>Arraste as bordas para ajustar ou marque outro trecho na onda. O zoom mantém a seleção.</p>
+    </div>
   </section>
+  <div id="results" class="results" hidden>
   <section class="workspace" aria-label="Análise espectral">
     <div class="section-head"><div><span class="eyebrow">03 / ESPECTRO</span><h2>O som, por dentro.</h2></div><span id="sampleMeta" class="small">48 kHz · FFT 4096 · hop 256</span></div>
-    <div class="plot"><canvas id="spectrum" width="1200" height="340" aria-label="Espectrograma da amostra, com frequência no eixo vertical e tempo no horizontal" role="img"></canvas><div id="empty">Importe um áudio ou use a demonstração<br><span>para revelar seus componentes.</span></div></div>
+    <div class="plot"><canvas id="spectrum" width="1200" height="340" aria-label="Espectrograma da amostra, com frequência no eixo vertical e tempo no horizontal" role="img"></canvas><div id="empty">Analise uma amostra<br><span>para revelar seus componentes.</span></div></div>
     <div class="legend"><span><i></i> Intensidade espectral</span><span><i class="line"></i> Até 80 parciais selecionados</span><span id="duration">Tempo →</span></div>
-    <div class="status"><span id="status" role="status" aria-live="polite">Pronto para começar.</span><progress id="progress" max="100" value="0" aria-label="Progresso"></progress></div>
   </section>
   <section class="controls" aria-label="Reconstrução e reprodução">
-    <div class="complexity"><div class="section-head"><label class="eyebrow" for="amount">04 / PARCIAIS NA RECONSTRUÇÃO</label><output id="percent" for="amount">100%</output></div><input id="amount" type="range" min="25" max="100" value="100" step="1" disabled><div class="range-labels"><span>25% · menos componentes</span><span>100% · todos os válidos</span></div><div class="stats"><strong id="selected">—</strong><span>de <b id="total">—</b> parciais rastreados</span></div><p class="small">Ordenados por energia, com leve preferência pelos harmônicos da fundamental. Não são osciladores físicos identificados no instrumento.</p></div>
-    <div class="listen"><span class="eyebrow">05 / OUVIR E COMPARAR</span><div class="row"><button id="original" disabled>▶ Original</button><button id="resynth" class="primary" disabled>▶ Resíntese</button><button id="stop" aria-label="Parar reprodução">■ Parar</button></div><label class="volume" for="volume">Volume<input id="volume" type="range" min="0" max="100" value="65"></label><button id="download" disabled>Baixar resíntese WAV</button><p class="small">A reconstrução usa senoides. Ruído, ataques e reverberação podem perder fidelidade.</p></div>
+    <div class="complexity"><div class="section-head"><label class="eyebrow" for="amount">04 / PARCIAIS NA RECONSTRUÇÃO</label><output id="percent" for="amount">100%</output></div><input id="amount" type="range" min="25" max="100" value="100" step="1" disabled><div class="range-labels"><span>25% · menos componentes</span><span>100% · todos os válidos</span></div><p id="selectionLocked" class="small" hidden>Seleção definitiva. Para escolher outros parciais, importe um novo sample.</p><div class="stats"><strong id="selected">—</strong><span>de <b id="total">—</b> parciais rastreados</span></div><div id="deepPanel" class="deep-panel"><p id="deepStatus" class="small" role="status">Refinamento automático e preparação das notas.</p><progress id="processingProgress" max="100" value="0" aria-label="Refinamento e preparação das notas"></progress></div></div>
+    <div id="adsrPanel" class="adsr-panel" hidden><div class="section-head"><span class="eyebrow">ENVELOPE ADSR</span><span class="small">Arraste os pontos</span></div><svg id="adsrGraph" viewBox="0 0 500 140" preserveAspectRatio="none" role="img" aria-label="Envelope ADSR editável. Ajustes precisos nos campos abaixo."><path d="M20 10V115H480" class="adsr-axis"/><path id="adsrCurve" class="adsr-curve"/><g id="adsrHandles"></g></svg><div class="adsr-fields"><label>Ataque (s)<input id="adsrAttack" type="number" min="0" max="5" step="0.01"></label><label>Decaimento (s)<input id="adsrDecay" type="number" min="0" max="5" step="0.01"></label><label>Sustentação (%)<input id="adsrSustain" type="number" min="0" max="100" step="1"></label><label>Release (s)<input id="adsrRelease" type="number" min="0" max="10" step="0.01"></label></div><p class="adsr-hint">Sustentação enquanto a tecla estiver pressionada, até o fim do áudio. Sem loop.</p></div>
+    <div id="comparison" class="listen"><span class="eyebrow">05 / OUVIR E COMPARAR</span><div class="row"><button id="original" disabled>▶ Original</button><button id="resynth" class="primary" disabled>▶ Resíntese</button></div><div class="row save-actions"><button id="download" disabled>Baixar resíntese WAV</button><button id="saveInstrument" class="primary" disabled>Salvar instrumento</button></div><p class="small">A reconstrução usa senoides. Ruído, ataques e reverberação podem perder fidelidade.</p></div>
   </section>
-  <section class="instrument" aria-label="Teclado e MIDI"><div class="section-head"><div><span class="eyebrow">06 / TOCAR</span><h2>Transforme em instrumento.</h2></div><button id="midi">Conectar MIDI</button></div><div id="keys" class="keys" aria-label="Teclado virtual"></div><p id="midiStatus" class="small">Toque nas teclas após a reconstrução. MIDI disponível em navegadores compatíveis, via localhost ou HTTPS.</p><p class="small">O teclado transpõe o áudio reconstruído: altura e duração variam juntas. Até 8 vozes simultâneas.</p></section>
-  <footer><span>Seu áudio é processado neste navegador. Nenhum upload.</span><span>STFT → picos → rastreamento → senoides</span></footer>
+  <section class="instrument" aria-label="Teclado e MIDI"><div class="section-head"><div><span class="eyebrow">06 / TOCAR</span><h2>Transforme em instrumento.</h2></div><div class="instrument-actions"><label class="volume" for="volume">Volume<input id="volume" type="range" min="0" max="100" value="65"></label><button id="stop" aria-label="Parar reprodução">■ Parar</button><button id="midi">Conectar MIDI</button></div></div><div id="keys" class="keys" aria-label="Teclado virtual"></div><p id="midiStatus" class="small">Toque nas teclas após a reconstrução. MIDI disponível em navegadores compatíveis, via localhost ou HTTPS.</p><p class="small">Notas geradas pelos parâmetros, com duração original preservada. 88 notas disponíveis (Lá0–Dó8). Até 64 vozes simultâneas.</p></section>
+  </div>
+  </div>
+  <div class="status"><span id="status" role="status" aria-live="polite">Importe uma amostra para começar.</span><progress id="progress" max="100" value="0" aria-label="Progresso"></progress></div>
+  </div>
 </main>
+<dialog id="renameDialog" aria-labelledby="renameTitle"><form id="renameForm"><h2 id="renameTitle">Renomear sample</h2><label for="sampleName">Nome do sample</label><input id="sampleName" type="text" maxlength="120" required autocomplete="off"><div class="row"><button id="cancelRename" type="button">Cancelar</button><button class="primary" type="submit">Salvar nome</button></div></form></dialog>
+<dialog id="saveDialog" aria-labelledby="saveTitle"><form id="saveForm"><h2 id="saveTitle">Salvar instrumento</h2><label for="instrumentName">Nome do sample</label><input id="instrumentName" type="text" maxlength="120" required autocomplete="off"><p class="small">Ao salvar, os parciais escolhidos serão definitivos. O áudio original e a análise inicial serão descartados; apenas os parâmetros finais serão guardados.</p><p id="saveError" role="alert"></p><div class="row"><button id="cancelSave" type="button">Cancelar</button><button id="confirmSave" class="primary" type="submit">Salvar instrumento</button></div></form></dialog>
+<dialog id="optionsDialog" aria-labelledby="optionsTitle"><h2 id="optionsTitle">Opções do sample</h2><div class="sample-menu"><button id="renameOption">Renomear</button><button id="deleteOption" class="danger">Excluir som salvo</button></div><p id="optionsError" role="alert"></p><button id="closeOptions">Fechar</button></dialog>
 </body>
 </html>
