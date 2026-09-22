@@ -1,0 +1,23 @@
+{
+  "analysis": "0920dfb44c0a56bbcc9e2e44d72b3d0ad65f2245957b6c6ff6da682dc4a6d999",
+  "spectrum": "e30b60f71d52fd34353262d312567f8b37c9142348c000480d48598fefacd812",
+  "refined": "73a02550aff22d8c3756c97f9acd3a68b6ff0cba34b760f1eb6228a5ce422768",
+  "audio": "295dceb9dc5b98a08f3b9c2f3b0644765dee6ebc665a0d480dc00ce0e5bae1c3",
+  "notes": {
+    "21": "98adb2a801474b268ab1b4dacc1e5eb204a833913255e7eca8e177347f22e522",
+    "48": "2c1f0ff7e3689634880182e820a647ee84d34977b06f354b008b667e741cbf85",
+    "57": "295dceb9dc5b98a08f3b9c2f3b0644765dee6ebc665a0d480dc00ce0e5bae1c3",
+    "69": "4823030206d44d06bea51813c47bdf56308521425765ba5a317e1931fd07e449",
+    "108": "7c371612c4f20742fec45e5b104a728481ab64074e76769d00686d3ee7ef33bb"
+  },
+  "summary": {
+    "initialError": 0.006368594478639224,
+    "finalError": 0.00035335526444127614,
+    "improvement": 94.45159735595573,
+    "iterations": 4,
+    "accepted": 4,
+    "cancelled": false,
+    "timedOut": false,
+    "percent": 67
+  }
+}
